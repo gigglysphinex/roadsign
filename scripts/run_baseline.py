@@ -140,8 +140,10 @@ def main():
         timings_ms.append(det_time)
 
     # ---- Aggregate metrics ----
-    avg_recall = float(np.mean(det_recalls)) if det_recalls else 0.0
-    avg_precision = float(np.mean(det_precisions)) if det_precisions else 0.0
+    avg_recall = float(np.nanmean(det_recalls)) if det_recalls else 0.0
+    # Filter out nan precision values (images where detector found 0 candidates).
+    valid_precs = [p for p in det_precisions if not np.isnan(p)]
+    avg_precision = float(np.mean(valid_precs)) if valid_precs else 0.0
     cls_accuracy = cls_correct / cls_total if cls_total else 0.0
     avg_ms = float(np.mean(timings_ms)) if timings_ms else 0.0
     fps = 1000.0 / avg_ms if avg_ms > 0 else 0.0

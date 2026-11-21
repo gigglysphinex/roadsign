@@ -298,6 +298,21 @@ Each physical sign in GTSRB has $\sim$30 photos at different distances. All fram
 \medskip
 Both splits are \textbf{saved as JSON} and committed to the repository. They are loaded (never recomputed) for all subsequent experiments, ensuring reproducibility (ENF6).
 
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Dataset} & \textbf{Train} & \textbf{Val} \\
+\midrule
+GTSDB (images)      & 480  & 120 \\
+GTSRB (sign crops)  & 31\,379 & 7\,830 \\
+\bottomrule
+\end{tabular}
+\caption{Final split sizes (seed = 42, 80/20 ratio). Both splits are saved as JSON and never recomputed.}
+\label{tab:splits}
+\end{table}
+
 \subsection{Annotation Quality Report (EF1)}
 
 The \texttt{anomaly\_report()} function checks the GTSDB annotations for:
@@ -310,9 +325,58 @@ The \texttt{anomaly\_report()} function checks the GTSDB annotations for:
   \item \textbf{Unannotated images}: training images with no ground-truth boxes.
 \end{itemize}
 
-\begin{notebox}
-The anomaly report results will be filled in after running the EDA script on the full dataset. Placeholder for actual numbers from \texttt{results/eda/eda\_report.json}.
-\end{notebox}
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lc}
+\toprule
+\textbf{Check} & \textbf{Result} \\
+\midrule
+Training images                   & 600 \\
+Annotations (bounding boxes)      & 506 \\
+Classes present                   & 40 / 43 \\
+Images without any annotation     & 94 \\
+Degenerate or out-of-bounds boxes & 0 \\
+Duplicate annotations             & 0 \\
+Invalid class IDs                 & 0 \\
+\bottomrule
+\end{tabular}
+\caption{GTSDB annotation quality report. Three classes have no training examples. 94 images contain no traffic sign (pure road background).}
+\label{tab:anomaly}
+\end{table}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Size bucket} & \textbf{$\leq$32\,px} & \textbf{33--96\,px} & \textbf{$>$96\,px} \\
+\midrule
+Count & 179 & 305 & 22 \\
+Share & 35\% & 60\% & 4\% \\
+\bottomrule
+\end{tabular}
+\caption{GTSDB box width distribution. Over a third of signs are very small ($\leq$32 pixels), which will make detection challenging. Only 4\% are large.}
+\label{tab:boxsizes}
+\end{table}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lc}
+\toprule
+\textbf{Measure} & \textbf{Value} \\
+\midrule
+Training images          & 39\,209 \\
+Classes present          & 43 / 43 \\
+Smallest class (class 0) & 210 images \\
+Largest class (class 2)  & 2\,250 images \\
+Imbalance ratio          & $\approx$10.7$\times$ \\
+\bottomrule
+\end{tabular}
+\caption{GTSRB training set summary. The class imbalance is significant: the largest class has 10.7 times more images than the smallest.}
+\label{tab:gtsrb_eda}
+\end{table}
 
 % ============================================================
 \section{Bounding Box Utilities (Chapter 4)}
@@ -466,8 +530,29 @@ The SVM is trained on HOG features of ground-truth crops from the training split
 
 \subsection{Baseline Results}
 
+The baseline was evaluated on the 120 GTSDB validation images.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lc}
+\toprule
+\textbf{Metric} & \textbf{Value} \\
+\midrule
+Detection recall @ IoU $\geq$ 0.5   & 0.396 (39.6\%) \\
+Classification accuracy (GT crops)  & 0.743 (75/101) \\
+Speed                               & 12.1 ms/image (82.9 FPS) \\
+\midrule
+Training crops used                 & 405 (40 classes) \\
+Validation images with signs        & 26 / 120 \\
+\bottomrule
+\end{tabular}
+\caption{Classical baseline results on the GTSDB validation split (CPU only). The HSV+shape detector finds about 40\% of signs. The HOG+SVM classifier gets 74\% right on ground-truth crops. This is the floor that deep learning must beat.}
+\label{tab:baseline}
+\end{table}
+
 \begin{notebox}
-Baseline metrics will be filled in after running \texttt{scripts/run\_baseline.py} on the full dataset. Expected outputs: detection recall/precision at IoU $\geq$ 0.5, classification accuracy on GT crops, speed (ms/image).
+The low detection recall (39.6\%) is expected: the HSV+shape detector only finds red and blue regions with plausible aspect ratios, so it misses small signs, signs in unusual lighting, and all yellow/white signs. The classification accuracy of 74.3\% on ground-truth crops shows that HOG features capture some shape information but lack the discriminative power of a CNN. Both numbers establish a meaningful floor for the deep learning models.
 \end{notebox}
 
 % ============================================================
