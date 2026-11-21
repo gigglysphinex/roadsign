@@ -1,0 +1,634 @@
+\documentclass[12pt,a4paper]{article}
+
+% ================== ENCODING & LANGUAGE ==================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+
+% ================== PAGE / LAYOUT ==================
+\usepackage[top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm, headheight=20pt]{geometry}
+\usepackage{setspace}
+\setstretch{1.3}
+\sloppy
+\emergencystretch=3em
+\setlength{\tabcolsep}{4pt}
+
+% ================== COLORS / GRAPHICS ==================
+\usepackage{graphicx}
+\usepackage[table]{xcolor}
+
+% ================== MATH ==================
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% ================== FLOATS / FIGURES ==================
+\usepackage{float}
+\usepackage{caption}
+
+% ================== LISTS ==================
+\usepackage{enumitem}
+
+% ================== CODE LISTINGS ==================
+\usepackage{listings}
+\lstdefinelanguage{Python}{
+  keywords={import, from, def, class, if, elif, else, while, for, try, except,
+            with, as, print, True, False, None, return, and, or, not, in, is,
+            lambda, yield, pass, break, continue, raise, del, global, nonlocal},
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{green!45!black}\itshape,
+  stringstyle=\color{red!70!black},
+  sensitive=true,
+  morecomment=[l]{\#},
+  morestring=[b]",
+  morestring=[b]'
+}
+
+% ================== BOXES (light version) ==================
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable}
+
+% ================== HEADERS / FOOTERS ==================
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\nouppercase{\leftmark}}
+\fancyhead[R]{%
+  \IfFileExists{logo-uir.png}{\includegraphics[height=0.5cm]{logo-uir.png}}{\textbf{UIR}}%
+}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+
+% ================== SECTION FORMATTING ==================
+\usepackage{titlesec}
+
+% ================== HYPERLINKS / TABLES ==================
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+
+% ================== CUSTOM COLORS ==================
+\definecolor{primarydark}{HTML}{1A0B0B}
+\definecolor{primarydarkalt}{HTML}{2C2C2C}
+\definecolor{primarylight}{HTML}{F5E9D9}
+\definecolor{primarylightalt}{HTML}{E8D9C5}
+\definecolor{accentcrimson}{HTML}{DC143C}
+\definecolor{accentcrimsondark}{HTML}{8B0000}
+\definecolor{accentgold}{HTML}{D4AF37}
+\definecolor{sectioncolor}{HTML}{8B0000}
+\definecolor{subsectioncolor}{HTML}{B8860B}
+\definecolor{codebg}{HTML}{F8F9FA}
+\definecolor{mathbg}{HTML}{FFF8F0}
+\definecolor{boxborder}{HTML}{D4AF37}
+\definecolor{notegreen}{HTML}{1B5E20}
+\definecolor{softcharcoal}{HTML}{444444}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=accentcrimsondark,
+    urlcolor=accentcrimsondark,
+}
+
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{sectioncolor}}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{subsectioncolor}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\color{primarydarkalt}}{\thesubsubsection}{1em}{}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{green!45!black}\itshape,
+  stringstyle=\color{red!70!black},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=8pt,
+  frame=single,
+  rulecolor=\color{accentgold!50},
+  backgroundcolor=\color{codebg},
+  breaklines=true,
+  tabsize=4,
+  showstringspaces=false,
+  captionpos=b,
+  xleftmargin=1.5em,
+}
+
+% ================== CUSTOM BOXES ==================
+\newtcolorbox{mathbox}[1][]{
+  width=\linewidth, before=\noindent, after=\par,
+  colback=mathbg, colframe=accentgold, boxrule=1pt, arc=3pt,
+  fonttitle=\bfseries\color{sectioncolor}, #1
+}
+\newtcolorbox{notebox}[1][]{
+  width=\linewidth, before=\noindent, after=\par,
+  colback=primarylightalt, colframe=subsectioncolor, boxrule=0.8pt, arc=3pt,
+  fonttitle=\bfseries\color{subsectioncolor}, title=Observation, #1
+}
+\newtcolorbox{keybox}[1][]{
+  width=\linewidth, before=\noindent, after=\par,
+  colback=primarylight, colframe=accentcrimsondark, boxrule=1pt, arc=3pt,
+  fonttitle=\bfseries\color{accentcrimsondark}, #1
+}
+\newtcolorbox{qbox}[1][]{
+  width=\linewidth, before=\noindent, after=\par, breakable,
+  colback=white, colframe=accentcrimsondark, boxrule=1pt, arc=3pt,
+  fonttitle=\bfseries\color{white}, colbacktitle=accentcrimsondark, #1
+}
+
+% ================== HELPERS ==================
+\newcommand{\fig}[4]{%
+\begin{figure}[H]
+\centering
+\IfFileExists{#1}{%
+  \includegraphics[width=#2\textwidth]{#1}%
+}{\fbox{\parbox{0.7\textwidth}{\centering\small Placeholder: \texttt{#1}}}}
+\caption{#3}
+\label{#4}
+\end{figure}}
+
+% ============================================================
+%                   DOCUMENT START
+% ============================================================
+\begin{document}
+
+% ============ TITLE PAGE ============
+\begin{titlepage}
+    \pagecolor{primarylight}
+    \centering
+    \vspace*{1.5cm}
+    \IfFileExists{logo-uir.png}{\includegraphics[height=3.5cm]{logo-uir.png}}{\Huge\textbf{UIR}}
+
+    \vspace{1cm}
+    {\color{accentcrimsondark}\rule{\textwidth}{2pt}}\\[0.6cm]
+    {\Huge\bfseries\color{primarydark} RoadSign}\\[8pt]
+    {\huge\bfseries\color{sectioncolor} Traffic Sign Detection \& Recognition}\\[6pt]
+    {\large GTSDB (detection) and GTSRB (classification, 43 classes) for an ADAS system}\\[4pt]
+    {\color{accentcrimsondark}\rule{\textwidth}{1pt}}\\[1.5cm]
+
+    {\Large\color{primarydark} Prepared by:}\\[6pt]
+    {\large Fadwa Bourrich \hfill (119315)}\\[4pt]
+    {\large Abdelmoati Elkoufachy \hfill (123495)}\\[4pt]
+    {\large Zine-elabidine Essabbar \hfill (119351)}\\[1cm]
+
+    \vspace{0.5cm}
+    {\large\color{softcharcoal} \textbf{Supervised by:}}\\[0.2cm]
+    {\large Pr. Najlae BOULAJOUL}
+
+    \vspace{1cm}
+    \noindent
+    \begin{minipage}{0.45\textwidth}
+        \begin{flushleft}
+            \textbf{\color{primarydark}Course:}\\
+            Advanced Computer Vision\\with Deep Neural Networks
+        \end{flushleft}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \begin{flushright}
+            \textbf{\color{primarydark}Program:}\\
+            5th-year Engineering\\Big Data \& AI
+        \end{flushright}
+    \end{minipage}
+
+    \vfill
+    {\color{accentgold}\rule{\textwidth}{0.5pt}}
+\end{titlepage}
+\nopagecolor
+
+% ============ PROJECT SUMMARY ============
+\begin{keybox}[title=Project Summary]
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt]
+  \item \textbf{Objective:} Detect and recognise traffic signs from dashcam images for an ADAS equipment maker. The system must run in real time on embedded hardware.
+  \item \textbf{Data:} GTSDB (900 images: 600 train, 300 test) for detection; GTSRB (50\,000+ crops, 43 classes) for classification. Test sets frozen, used once.
+  \item \textbf{Pipelines:} Classical baseline (HSV + HOG/SVM), CNN from scratch vs.\ pretrained (classification), YOLO vs.\ Faster R-CNN (detection), detect-then-classify (A1).
+  \item \textbf{Enhancements:} Copy-paste synthetic data (A2), ONNX/INT8 benchmark (A3), web demo (A6).
+  \item \textbf{Evaluation:} mAP@0.5, recall, F1 per class, ms/image, FPS, parameter count, robustness subsets.
+\end{itemize}
+\end{keybox}
+
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Introduction}
+\label{sec:intro}
+% ============================================================
+
+An Advanced Driver-Assistance System (ADAS) must detect and recognise traffic signs from a forward-facing camera in real time. This project builds such a system using two public benchmarks: \textbf{GTSDB} (German Traffic Sign Detection Benchmark) for localising signs in full road images, and \textbf{GTSRB} (German Traffic Sign Recognition Benchmark) for classifying 32$\times$32 sign crops into 43 classes.
+
+The project is structured in five phases:
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Data pipeline} (EF1): loading, quality report, leak-free splits, format conversion.
+  \item \textbf{CNN design} (Ch.~2--3): architecture table with hand-computed dimensions.
+  \item \textbf{Classification} (EF2): scratch CNN vs.\ pretrained, controlled experiments.
+  \item \textbf{Detection} (EF3): YOLO (single-stage) vs.\ Faster R-CNN (two-stage), post-processing (EF4), demo (EF5).
+  \item \textbf{Final evaluation}: ONNX/INT8 benchmark, robustness analysis, conformity table.
+\end{enumerate}
+
+This report covers the work completed so far and will be updated as each phase is finished.
+
+% ============================================================
+\section{Data and Evaluation Protocol}
+\label{sec:data}
+% ============================================================
+
+\subsection{Datasets}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{llll}
+\toprule
+\textbf{Dataset} & \textbf{Role} & \textbf{Content} & \textbf{Note} \\
+\midrule
+GTSDB & Detection & 900 images (600 train / 300 test) & Signs often very small \\
+GTSRB & Classification & 50\,000+ crops, 43 classes & $\sim$30 frames per physical sign \\
+\bottomrule
+\end{tabular}
+\caption{The two datasets and their roles.}
+\label{tab:datasets}
+\end{table}
+
+GTSDB images are 1360$\times$800 pixels taken from a dashcam. Each image may contain zero or more traffic signs annotated with bounding boxes and class IDs (0--42). GTSRB provides cropped sign images grouped by class and by physical sign track (each real-world sign is photographed $\sim$30 times at different distances).
+
+\subsection{Test Set Freeze (Hard Rule)}
+
+The GTSDB test images (00600--00899) and the GTSRB official test set are \textbf{frozen}: never read during development, never used to choose a model, epoch, threshold, or hyperparameter. A guard function \texttt{assert\_not\_test(path)} raises an error if any script attempts to access them:
+
+\begin{lstlisting}[language=Python, caption={Test-set guard in \texttt{data.py}.}]
+def assert_not_test(path: str) -> None:
+    """Raise ValueError if path points to a test image."""
+    base = os.path.basename(path)
+    if is_gtsdb_test_image(base):
+        raise ValueError(f"FORBIDDEN: {path} is a GTSDB test image (00600-00899).")
+    parts = path.replace("\\", "/").lower().split("/")
+    for forbidden in ("final_test", "gt_final_test"):
+        if forbidden in parts:
+            raise ValueError(f"FORBIDDEN: {path} belongs to the GTSRB official test set.")
+\end{lstlisting}
+
+This guard is covered by 3 unit tests that verify it blocks test paths and allows training paths.
+
+\subsection{Leak-Free Splits}
+\label{sec:splits}
+
+Validation comes from the training data only. Two splitting strategies prevent data leakage:
+
+\subsubsection{GTSDB: Block Split}
+
+Consecutive GTSDB frames come from the same dashcam drive and look nearly identical. A random image-level split would leak near-duplicates into validation. Instead, images are grouped into \textbf{blocks of 20 consecutive images}, the blocks are shuffled (seed = 42), and 20\% of the blocks go to validation.
+
+\begin{lstlisting}[language=Python, caption={Block split for GTSDB (simplified).}]
+def block_split(image_names, val_frac=0.2, block=20, seed=0):
+    names = sorted(image_names)
+    blocks = [names[i:i + block] for i in range(0, len(names), block)]
+    rng = random.Random(seed)
+    rng.shuffle(blocks)
+    n_val = max(1, round(len(blocks) * val_frac))
+    val = sorted(n for b in blocks[:n_val] for n in b)
+    train = sorted(n for b in blocks[n_val:] for n in b)
+    return train, val
+\end{lstlisting}
+
+\subsubsection{GTSRB: Track Split}
+
+Each physical sign in GTSRB has $\sim$30 photos at different distances. All frames of one sign must stay on the same side (train or val), otherwise the model memorises the specific sign. The split groups files by \texttt{(class, track\_id)} and assigns 20\% of tracks per class to validation.
+
+\medskip
+Both splits are \textbf{saved as JSON} and committed to the repository. They are loaded (never recomputed) for all subsequent experiments, ensuring reproducibility (ENF6).
+
+\subsection{Annotation Quality Report (EF1)}
+
+The \texttt{anomaly\_report()} function checks the GTSDB annotations for:
+
+\begin{itemize}[leftmargin=2em, itemsep=2pt]
+  \item \textbf{Degenerate boxes}: $x_2 \leq x_1$ or $y_2 \leq y_1$ (zero or negative area).
+  \item \textbf{Boxes outside image}: coordinates exceed the image dimensions (1360$\times$800).
+  \item \textbf{Invalid class IDs}: not in the range $[0, 42]$.
+  \item \textbf{Duplicate annotations}: same image, box, and class appearing twice.
+  \item \textbf{Unannotated images}: training images with no ground-truth boxes.
+\end{itemize}
+
+\begin{notebox}
+The anomaly report results will be filled in after running the EDA script on the full dataset. Placeholder for actual numbers from \texttt{results/eda/eda\_report.json}.
+\end{notebox}
+
+% ============================================================
+\section{Bounding Box Utilities (Chapter 4)}
+\label{sec:boxes}
+% ============================================================
+
+All box operations are implemented from scratch in \texttt{boxes.py}, as required by the course.
+
+\subsection{Intersection over Union}
+
+\begin{mathbox}[title=IoU Formula]
+\[
+\mathrm{IoU}(A,B) = \frac{\mathrm{area}(A \cap B)}{\mathrm{area}(A \cup B)} = \frac{\mathrm{area}(A \cap B)}{\mathrm{area}(A) + \mathrm{area}(B) - \mathrm{area}(A \cap B)} \in [0, 1]
+\]
+\end{mathbox}
+
+The implementation is vectorised with NumPy for efficiency. \texttt{iou\_matrix(a, b)} computes IoU between every pair from two sets of boxes in a single operation:
+
+\begin{lstlisting}[language=Python, caption={Vectorised IoU matrix computation.}]
+def iou_matrix(a, b):
+    """IoU between every box of a (N,4) and every box of b (M,4) -> (N,M)."""
+    a = np.asarray(a, dtype=float).reshape(-1, 4)
+    b = np.asarray(b, dtype=float).reshape(-1, 4)
+    ix1 = np.maximum(a[:, None, 0], b[None, :, 0])
+    iy1 = np.maximum(a[:, None, 1], b[None, :, 1])
+    ix2 = np.minimum(a[:, None, 2], b[None, :, 2])
+    iy2 = np.minimum(a[:, None, 3], b[None, :, 3])
+    inter = np.clip(ix2 - ix1, 0, None) * np.clip(iy2 - iy1, 0, None)
+    area_a = (a[:, 2] - a[:, 0]) * (a[:, 3] - a[:, 1])
+    area_b = (b[:, 2] - b[:, 0]) * (b[:, 3] - b[:, 1])
+    union = area_a[:, None] + area_b[None, :] - inter
+    return np.where(union > 0, inter / np.maximum(union, 1e-12), 0.0)
+\end{lstlisting}
+
+\subsection{Non-Maximum Suppression}
+
+After a detector produces many overlapping boxes for the same object, NMS keeps only the best-scoring one. The algorithm: sort boxes by decreasing confidence; keep the top box; remove all remaining boxes whose IoU with it exceeds a threshold; repeat.
+
+\begin{lstlisting}[language=Python, caption={Greedy NMS implementation.}]
+def nms(boxes, scores, iou_thr=0.5):
+    """Greedy NMS. Returns kept indices, best score first."""
+    order = np.argsort(-scores, kind="stable")
+    keep = []
+    while order.size:
+        i = order[0]
+        keep.append(int(i))
+        if order.size == 1:
+            break
+        rest = order[1:]
+        overlaps = iou_matrix(boxes[i], boxes[rest])[0]
+        order = rest[overlaps <= iou_thr]
+    return keep
+\end{lstlisting}
+
+A \textbf{class-aware} variant applies NMS separately per class, so that overlapping objects of different classes (e.g.\ a speed limit sign behind a stop sign) are not suppressed.
+
+\subsection{Format Conversions}
+
+Two converters handle the transformation between pixel coordinates \texttt{(x1, y1, x2, y2)} and YOLO's normalised \texttt{(cx, cy, w, h)} format, used for training label files.
+
+\subsection{Unit Tests}
+
+The box utilities are covered by unit tests verifying:
+\begin{itemize}[leftmargin=2em, itemsep=2pt]
+  \item Identical boxes give IoU = 1.0, disjoint boxes give IoU = 0.0.
+  \item Known fractional IoU values match hand-computed results.
+  \item The IoU matrix is symmetric and has the correct shape.
+  \item NMS keeps the best-scoring box and suppresses overlapping duplicates.
+\end{itemize}
+
+% ============================================================
+\section{CNN Design Tools (Chapters 2--3)}
+\label{sec:shapes}
+% ============================================================
+
+The course requires computing output dimensions and parameter counts \textbf{by hand} using the convolution formula, then verifying against the real PyTorch model.
+
+\subsection{Output Size Formula}
+
+\begin{mathbox}[title=Convolution Output Size (Course Formula)]
+\[
+O = \left\lfloor \frac{I + 2P - K_{\mathrm{eff}}}{S} \right\rfloor + 1 \qquad \text{where } K_{\mathrm{eff}} = d(K-1) + 1
+\]
+$I$ = input size, $K$ = kernel size, $S$ = stride, $P$ = padding, $d$ = dilation.
+\end{mathbox}
+
+\subsection{Parameter Count Formulas}
+
+\begin{itemize}[leftmargin=2em, itemsep=2pt]
+  \item \textbf{Conv2d}$(C_{\text{in}}, F, K)$: $F \times (C_{\text{in}} \times K^2 + 1)$ parameters (with bias).
+  \item \textbf{Linear}$(I, J)$: $J \times (I + 1)$ parameters (with bias).
+  \item \textbf{BatchNorm2d}$(C)$: $2C$ trainable parameters ($\gamma$ and $\beta$).
+\end{itemize}
+
+\subsection{The \texttt{describe} Function}
+
+The \texttt{describe(layers, in\_shape)} function takes a CNN architecture described as a list of layer dictionaries and walks through it, computing the output shape and parameter count at each layer. This produces the ``by-hand table'' required by the course.
+
+\begin{lstlisting}[language=Python, caption={Verification against PyTorch.}]
+def check_against_torch(model, rows):
+    """Compare hand-computed total with sum(p.numel()) of a torch model."""
+    real = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    return real, total_params(rows), real == total_params(rows)
+\end{lstlisting}
+
+The hand-computed total must match the PyTorch count exactly. This is verified for every architecture we design.
+
+\begin{notebox}
+The specific CNN architecture for GTSRB classification (43 classes, 32$\times$32 input) will be designed in Phase~2, with the full layer table showing input/output dimensions at each layer.
+\end{notebox}
+
+% ============================================================
+\section{Classical Baseline (Chapter 1)}
+\label{sec:baseline}
+% ============================================================
+
+Before any deep learning, a classical baseline establishes the performance floor. It consists of two stages:
+
+\subsection{Detection: HSV Colour Segmentation + Shape Filtering}
+
+Traffic signs have distinctive colours (red for prohibitions/warnings, blue for mandatory signs). The detector:
+\begin{enumerate}[leftmargin=2em]
+  \item Converts the image to HSV colour space.
+  \item Creates binary masks for red pixels ($H \in [0, 10] \cup [170, 180]$, $S \geq 90$) and blue pixels ($H \in [100, 130]$, $S \geq 120$).
+  \item Applies morphological closing to fill gaps.
+  \item Finds contours and filters by size (12--250 px), aspect ratio (0.6--1.6), and fill ratio ($\geq 0.35$).
+\end{enumerate}
+
+This produces candidate bounding boxes with no confidence score and no class label.
+
+\begin{lstlisting}[language=Python, caption={HSV colour + shape candidate detection (simplified).}]
+def color_shape_candidates(img_bgr, min_side=12, max_side=250):
+    hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    red = cv2.inRange(hsv, (0, 90, 60), (10, 255, 255)) | \
+          cv2.inRange(hsv, (170, 90, 60), (180, 255, 255))
+    blue = cv2.inRange(hsv, (100, 120, 50), (130, 255, 255))
+    mask = cv2.morphologyEx(red | blue, cv2.MORPH_CLOSE, np.ones((5, 5)))
+    # ... contour extraction and filtering by size/shape ...
+    return boxes
+\end{lstlisting}
+
+\subsection{Classification: HOG + Linear SVM}
+
+For classification of 32$\times$32 sign crops, Histogram of Oriented Gradients (HOG) features are extracted and fed to a linear SVM:
+\begin{itemize}[leftmargin=2em, itemsep=2pt]
+  \item \textbf{HOG parameters}: 9 orientations, 8$\times$8 pixels per cell, 2$\times$2 cells per block, L2-Hys normalisation.
+  \item \textbf{Classifier}: \texttt{sklearn.svm.LinearSVC} with $C = 1.0$.
+\end{itemize}
+
+The SVM is trained on HOG features of ground-truth crops from the training split and evaluated on validation crops.
+
+\subsection{Baseline Results}
+
+\begin{notebox}
+Baseline metrics will be filled in after running \texttt{scripts/run\_baseline.py} on the full dataset. Expected outputs: detection recall/precision at IoU $\geq$ 0.5, classification accuracy on GT crops, speed (ms/image).
+\end{notebox}
+
+% ============================================================
+\section{Synthetic Data Augmentation (Enhancement A2)}
+\label{sec:synth}
+% ============================================================
+
+GTSDB has only 600 training images, which is very few for training a detector. To compensate, we implemented copy-paste augmentation: GTSRB training crops are pasted onto GTSDB training backgrounds with realistic transformations.
+
+The \texttt{paste\_signs()} function:
+\begin{enumerate}[leftmargin=2em]
+  \item Randomly selects a sign crop and a target size (16--80 px).
+  \item Picks a random position, checks IoU against existing annotations and previously pasted signs to avoid overlaps.
+  \item Applies random brightness/contrast shift ($\times 0.6$--$1.3$, $\pm 20$) and optional Gaussian blur (simulating motion/defocus).
+  \item Blends the sign into the background using a feathered (Gaussian-blurred) alpha mask for smooth edges.
+\end{enumerate}
+
+\begin{notebox}
+Only training backgrounds and training crops are used. Evaluation is always on the \textbf{real} validation split. An ablation (with vs.\ without synthetic data) will quantify the actual benefit.
+\end{notebox}
+
+% ============================================================
+\section{YOLO Format Export}
+\label{sec:yolo}
+% ============================================================
+
+For detection training with Ultralytics YOLO, the GTSDB annotations are exported to the standard YOLO directory layout:
+
+\begin{lstlisting}[caption={YOLO directory structure.}]
+results/yolo/43cls/        results/yolo/1cls/
+  images/train/              images/train/
+  images/val/                images/val/
+  labels/train/              labels/train/
+  labels/val/                labels/val/
+  data.yaml                  data.yaml
+\end{lstlisting}
+
+Two variants are produced:
+\begin{itemize}[leftmargin=2em, itemsep=2pt]
+  \item \textbf{43-class}: one class per sign type, for the standard 43-class detector (EF3).
+  \item \textbf{1-class}: all signs labelled as class 0 (``sign''), for the detect-then-classify pipeline (Enhancement A1), where a single-class detector finds sign candidates and a separate CNN classifies each crop.
+\end{itemize}
+
+Each YOLO label line has the format: \texttt{class cx cy w h} (normalised to $[0, 1]$). Images are symlinked to avoid copying large files. A \texttt{data.yaml} is generated for Ultralytics with paths, class count, and class names.
+
+% ============================================================
+\section{Reproducibility (ENF6)}
+\label{sec:repro}
+% ============================================================
+
+All experiments are driven by a YAML configuration file specifying data paths, random seed, split ratios, and output directories. The following measures ensure reproducibility:
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{ll}
+\toprule
+\textbf{Measure} & \textbf{Implementation} \\
+\midrule
+Fixed seed & \texttt{seed: 42} in config, passed to all split and training functions \\
+Saved splits & JSON files committed to repo, loaded (never recomputed) \\
+Test guard & \texttt{assert\_not\_test()} prevents accidental test-set access \\
+Version logging & Scripts print library versions and GPU model at start \\
+Checkpoints & Models saved every epoch, training is resumable \\
+Config tracking & YAML config + git commit hash logged per run \\
+\bottomrule
+\end{tabular}
+\caption{Reproducibility measures (ENF6).}
+\end{table}
+
+% ============================================================
+\section{Training Environment}
+\label{sec:env}
+% ============================================================
+
+All training and data processing runs on \textbf{Kaggle} (free GPU, up to 12-hour sessions). The code lives in a GitHub repository (\texttt{gigglysphinex/roadsign}) and is cloned into Kaggle at the start of each session. The GTSDB and GTSRB datasets are attached as Kaggle inputs (read-only at \texttt{/kaggle/input/}).
+
+\fig{kaggle-tests-pass.png}{0.75}{Kaggle notebook: repository cloned and all 21 unit tests passing before any data processing.}{fig:kaggle-tests}
+
+\fig{kaggle-datasets-attached.png}{0.75}{Kaggle notebook with both GTSDB and GTSRB datasets attached as inputs (right sidebar).}{fig:kaggle-datasets}
+
+Notebooks are thin wrappers that clone the repo, install dependencies, and call CLI scripts. No logic is hidden inside notebooks --- all processing code lives in \texttt{src/roadsign/} and \texttt{scripts/}, ensuring reproducibility across environments.
+
+% ============================================================
+\section{Project Code Structure}
+\label{sec:code}
+% ============================================================
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\small
+\begin{tabular}{lp{9cm}}
+\toprule
+\textbf{File} & \textbf{Purpose} \\
+\midrule
+\texttt{src/roadsign/boxes.py}    & IoU, NMS, class-aware NMS, YOLO $\leftrightarrow$ xyxy conversion (Ch.~4) \\
+\texttt{src/roadsign/shapes.py}   & CNN output sizes and parameter counts with course formulas (Ch.~2--3) \\
+\texttt{src/roadsign/data.py}     & GT parsing, anomaly report, leak-free splits, YOLO label export, test guard (EF1) \\
+\texttt{src/roadsign/synth.py}    & Copy-paste synthetic data augmentation (A2) \\
+\texttt{src/roadsign/baseline.py} & HOG+SVM classification, HSV+shape detection (Ch.~1) \\
+\midrule
+\texttt{scripts/eda.py}           & Exploratory data analysis: distributions, box sizes, anomaly report \\
+\texttt{scripts/make\_splits.py}  & Create and save GTSDB + GTSRB train/val splits as JSON \\
+\texttt{scripts/export\_yolo.py}  & Export GTSDB to Ultralytics YOLO directory layout (43-class and 1-class) \\
+\texttt{scripts/run\_baseline.py} & Run classical baseline on validation, save metrics \\
+\midrule
+\texttt{configs/phase1.yaml}      & Data paths, seed, split ratios, output directories \\
+\texttt{tests/}                   & 21 unit tests covering all modules \\
+\bottomrule
+\end{tabular}
+\caption{Repository structure. All code is in Python, comments in English.}
+\end{table}
+
+% ============================================================
+\section{Current Status and Next Steps}
+\label{sec:status}
+% ============================================================
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{llcc}
+\toprule
+\textbf{ID} & \textbf{Requirement} & \textbf{Status} & \textbf{Evidence} \\
+\midrule
+EF1 & Data chain, anomaly report, splits         & Partial & Code done, awaiting data run \\
+EF2 & Classification (scratch vs.\ pretrained)   & Pending & -- \\
+EF3 & Detection (YOLO vs.\ Faster R-CNN)         & Pending & -- \\
+EF4 & Post-processing JSON output                & Pending & -- \\
+EF5 & Demonstrator                               & Pending & -- \\
+\midrule
+ENF1 & mAP, recall                               & Pending & -- \\
+ENF2 & Speed (ms/image, FPS)                      & Pending & -- \\
+ENF3 & Model size (params, MB)                    & Pending & -- \\
+ENF4 & Robustness subsets                         & Pending & -- \\
+ENF5 & Evaluation integrity                      & Partial & Test guard in place \\
+ENF6 & Reproducibility                            & Partial & Seeds, configs, splits ready \\
+\midrule
+A1  & Detect-then-classify pipeline              & Pending & 1-class YOLO export ready \\
+A2  & Copy-paste synthetic data                  & Partial & \texttt{synth.py} done \\
+A3  & ONNX / INT8 benchmark                      & Pending & -- \\
+A6  & Web demo                                   & Pending & -- \\
+\bottomrule
+\end{tabular}
+\caption{Conformity table (to be completed as the project progresses).}
+\label{tab:conformity}
+\end{table}
+
+\textbf{Immediate next steps:}
+\begin{enumerate}[leftmargin=2em]
+  \item Run EDA, splits, and baseline on the full GTSDB/GTSRB data (Kaggle).
+  \item Design the CNN architecture for GTSRB classification (Phase~2).
+  \item Train scratch CNN and pretrained model with controlled experiments (Phase~3).
+\end{enumerate}
+
+% ============================================================
+% APPENDIX (if needed later)
+% ============================================================
+% \appendix
+% \section{Full CNN Layer Table}
+% \section{Experiment Logs}
+
+\end{document}

@@ -1,0 +1,16 @@
+# Kaggle configuration -- paths point to the working copies created by
+# scripts/prepare_kaggle.py (symlinks into /kaggle/input/).
+
+gtsdb_root: /kaggle/working/roadsign/data/gtsdb
+gtsrb_root: /kaggle/working/roadsign/data/gtsrb
+
+seed: 42
+gtsdb_val_frac: 0.2
+gtsdb_block_size: 20
+gtsrb_val_frac: 0.2
+
+output_dir: results
+splits_dir: results/splits
+eda_dir: results/eda
+baseline_dir: results/baseline
+yolo_dir: results/yolo
