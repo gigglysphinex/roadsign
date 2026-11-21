@@ -1,0 +1,16 @@
+# Phase 1 configuration -- paths, seed, split ratios.
+# Adjust gtsdb_root / gtsrb_root to match your machine or Kaggle layout.
+
+gtsdb_root: data/gtsdb          # contains 00000.ppm..00599.ppm + gt.txt
+gtsrb_root: data/gtsrb          # contains Train/<classId>/<track>_<frame>.ppm
+
+seed: 42
+gtsdb_val_frac: 0.2             # 80/20 train/val for GTSDB
+gtsdb_block_size: 20            # consecutive images per block
+gtsrb_val_frac: 0.2             # 80/20 train/val for GTSRB (by track)
+
+output_dir: results              # all outputs go here
+splits_dir: results/splits
+eda_dir: results/eda
+baseline_dir: results/baseline
+yolo_dir: results/yolo           # YOLO-format export root
