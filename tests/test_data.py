@@ -33,11 +33,25 @@ def test_block_split_no_overlap_and_block_integrity():
 
 
 def test_gtsrb_track_split_keeps_tracks_together():
+    # Original format: TRACK_FRAME.ppm
     files = [f"{c:05d}/{t:05d}_{f:05d}.ppm" for c in range(3) for t in range(10) for f in range(30)]
     tr, va = gtsrb_track_split(files, 0.2, seed=0)
     tracks = lambda fs: {(f.split("/")[0], f.split("/")[1].split("_")[0]) for f in fs}
     assert tracks(tr).isdisjoint(tracks(va)) and len(tr) + len(va) == len(files)
     assert all(any(f.startswith(f"{c:05d}") for f in va) for c in range(3))  # each class in val
+
+
+def test_gtsrb_track_split_three_part_naming():
+    # Kaggle format: CLASS_TRACK_FRAME.png (3 parts)
+    files = [f"{c}/{c:05d}_{t:05d}_{f:05d}.png" for c in range(3) for t in range(10) for f in range(30)]
+    tr, va = gtsrb_track_split(files, 0.2, seed=0)
+    assert len(va) > 0, "Validation set must not be empty"
+    assert len(tr) + len(va) == len(files)
+    # All frames of the same track stay on the same side.
+    track_of = lambda f: (f.split("/")[0], f.split("/")[1].split("_")[1])
+    tr_tracks = {track_of(f) for f in tr}
+    va_tracks = {track_of(f) for f in va}
+    assert tr_tracks.isdisjoint(va_tracks)
 
 
 def test_yolo_lines():

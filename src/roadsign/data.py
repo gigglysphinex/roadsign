@@ -112,7 +112,11 @@ def gtsrb_track_split(files, val_frac=0.2, seed=0):
     tracks = defaultdict(list)
     for f in files:
         cls_dir, fname = f.replace("\\", "/").split("/")[-2:]
-        tracks[(cls_dir, fname.split("_")[0])].append(f)
+        parts = os.path.splitext(fname)[0].split("_")
+        # Original GTSRB: TRACK_FRAME.ppm (2 parts) -> track = parts[0]
+        # Kaggle variant:  CLASS_TRACK_FRAME.png (3 parts) -> track = parts[1]
+        track_id = parts[1] if len(parts) >= 3 else parts[0]
+        tracks[(cls_dir, track_id)].append(f)
     by_class = defaultdict(list)
     for (cls_dir, tr) in tracks:
         by_class[cls_dir].append((cls_dir, tr))
