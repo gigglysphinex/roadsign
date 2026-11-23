@@ -47,8 +47,8 @@ GTSDB_NAMES = {
 }
 
 
-def write_yolo_dataset(gtsdb_root, rows, split, out_root, single_class=False):
-    """Write images (as symlinks) and label .txt files in YOLO layout."""
+def write_yolo_dataset(gtsdb_root, rows, split, out_root, single_class=False, copy=False):
+    """Write images and label .txt files in YOLO layout."""
     img_w, img_h = GTSDB_SIZE
 
     # Group annotations by image name.
@@ -66,9 +66,11 @@ def write_yolo_dataset(gtsdb_root, rows, split, out_root, single_class=False):
             assert_not_test(img_name)
             src = os.path.abspath(os.path.join(gtsdb_root, img_name))
             dst = os.path.join(img_dir, img_name)
-            # Symlink the image to avoid copying large files.
             if not os.path.exists(dst):
-                os.symlink(src, dst)
+                if copy:
+                    shutil.copy2(src, dst)
+                else:
+                    os.symlink(src, dst)
 
             stem = os.path.splitext(img_name)[0]
             lbl_path = os.path.join(lbl_dir, stem + ".txt")
@@ -96,6 +98,8 @@ def write_yolo_dataset(gtsdb_root, rows, split, out_root, single_class=False):
 def main():
     parser = argparse.ArgumentParser(description="Export GTSDB to YOLO format")
     parser.add_argument("--config", default="configs/phase1.yaml")
+    parser.add_argument("--copy", action="store_true",
+                        help="Copy images instead of symlinking (for Kaggle)")
     args = parser.parse_args()
 
     with open(args.config) as f:
@@ -114,14 +118,16 @@ def main():
 
     # 43-class variant.
     out_43 = os.path.join(yolo_root, "43cls")
-    p = write_yolo_dataset(cfg["gtsdb_root"], rows, split, out_43, single_class=False)
+    p = write_yolo_dataset(cfg["gtsdb_root"], rows, split, out_43,
+                           single_class=False, copy=args.copy)
     n_train = len(split["train"])
     n_val = len(split["val"])
     print(f"[YOLO] 43-class: {n_train} train / {n_val} val images -> {p}")
 
     # 1-class variant (for A1 detect-then-classify).
     out_1 = os.path.join(yolo_root, "1cls")
-    p = write_yolo_dataset(cfg["gtsdb_root"], rows, split, out_1, single_class=True)
+    p = write_yolo_dataset(cfg["gtsdb_root"], rows, split, out_1,
+                           single_class=True, copy=args.copy)
     print(f"[YOLO]  1-class: {n_train} train / {n_val} val images -> {p}")
 
 
