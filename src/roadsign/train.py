@@ -19,23 +19,40 @@ from .data import load_split, assert_not_test
 class GTSRBDataset(Dataset):
     """Loads GTSRB sign crops from a split JSON file."""
 
-    def __init__(self, gtsrb_root, file_list, transform=None):
+    def __init__(self, gtsrb_root, file_list, transform=None, cache=True):
         self.gtsrb_root = gtsrb_root
         self.files = file_list
         self.transform = transform
         train_root = os.path.join(gtsrb_root, "Train")
         self.base = train_root if os.path.isdir(train_root) else gtsrb_root
+        self._cache = {}
+        if cache:
+            self._preload()
+
+    def _preload(self):
+        from PIL import Image
+        print(f"[CACHE] Pre-loading {len(self.files)} images into memory...")
+        for idx, rel in enumerate(self.files):
+            path = os.path.join(self.base, rel)
+            assert_not_test(path)
+            img = Image.open(path).convert("RGB").resize((32, 32))
+            label = int(rel.split("/")[0]) if "/" in rel else int(os.path.basename(rel).split("_")[0])
+            self._cache[idx] = (img, label)
+        print(f"[CACHE] Done.")
 
     def __len__(self):
         return len(self.files)
 
     def __getitem__(self, idx):
-        rel = self.files[idx]
-        path = os.path.join(self.base, rel)
-        assert_not_test(path)
-        from PIL import Image
-        img = Image.open(path).convert("RGB").resize((32, 32))
-        label = int(rel.split("/")[0]) if "/" in rel else int(os.path.basename(rel).split("_")[0])
+        if idx in self._cache:
+            img, label = self._cache[idx]
+        else:
+            rel = self.files[idx]
+            path = os.path.join(self.base, rel)
+            assert_not_test(path)
+            from PIL import Image
+            img = Image.open(path).convert("RGB").resize((32, 32))
+            label = int(rel.split("/")[0]) if "/" in rel else int(os.path.basename(rel).split("_")[0])
         if self.transform:
             img = self.transform(img)
         else:
