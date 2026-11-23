@@ -90,7 +90,7 @@ def main():
         epochs=args.epochs,
         imgsz=args.imgsz,
         batch=args.batch,
-        project=out_dir,
+        project=os.path.abspath(out_dir),
         name="train",
         exist_ok=True,
         seed=cfg.get("seed", 42),

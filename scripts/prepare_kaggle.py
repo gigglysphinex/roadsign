@@ -41,7 +41,7 @@ def yolo_to_xyxy(cx, cy, w, h, img_w, img_h):
     return int(round(x1)), int(round(y1)), int(round(x2)), int(round(y2))
 
 
-def convert_yolo_to_gt(labels_dir, images_dir, out_gt_path):
+def convert_yolo_to_gt(labels_dir, images_dir, out_gt_path, append=False):
     """Read YOLO label files and produce a gt.txt in GTSDB format."""
     lines = []
     for lbl_file in sorted(os.listdir(labels_dir)):
@@ -68,7 +68,8 @@ def convert_yolo_to_gt(labels_dir, images_dir, out_gt_path):
                 x1, y1, x2, y2 = yolo_to_xyxy(cx, cy, w, h, IMG_W, IMG_H)
                 lines.append(f"{img_name};{x1};{y1};{x2};{y2};{cls}")
 
-    with open(out_gt_path, "w") as f:
+    mode = "a" if append else "w"
+    with open(out_gt_path, mode) as f:
         f.write("\n".join(sorted(lines)) + "\n")
     return len(lines)
 
@@ -98,6 +99,27 @@ def setup_gtsdb():
     n_annots = convert_yolo_to_gt(train_labels, train_images, gt_path)
     print(f"[PREP] GTSDB: {count} training images symlinked, {n_annots} annotations -> {gt_path}")
 
+    # Also link test images (for final evaluation).
+    test_images = os.path.join(GTSDB_INPUT, "Test", "images")
+    test_labels = os.path.join(GTSDB_INPUT, "Test", "labels")
+    if os.path.isdir(test_images):
+        t_count = 0
+        for img in sorted(os.listdir(test_images)):
+            src = os.path.join(test_images, img)
+            dst = os.path.join(GTSDB_WORK, img)
+            if not os.path.exists(dst):
+                os.symlink(src, dst)
+            t_count += 1
+        # Append test annotations to gt.txt.
+        if os.path.isdir(test_labels):
+            n_test = convert_yolo_to_gt(test_labels, test_images, gt_path,
+                                         append=True)
+            print(f"[PREP] GTSDB: {t_count} test images + {n_test} test annotations linked")
+        else:
+            print(f"[PREP] GTSDB: {t_count} test images linked (no labels)")
+    else:
+        print("[PREP] GTSDB: test images not found (final eval will skip)")
+
 
 def setup_gtsrb():
     """Symlink the GTSRB Train folder so our scripts can find it."""
@@ -121,6 +143,18 @@ def setup_gtsrb():
             total += sum(1 for f in os.listdir(cls_path)
                          if f.lower().endswith((".ppm", ".png", ".jpg")))
     print(f"[PREP] GTSRB: {total} training images linked at {dst}")
+
+    # Symlink the Test directory (for final evaluation).
+    for name in ("Test", "Final_Test"):
+        test_src = os.path.join(GTSRB_INPUT, name)
+        if os.path.isdir(test_src):
+            test_dst = os.path.join(GTSRB_WORK, name)
+            if not os.path.exists(test_dst):
+                os.symlink(test_src, test_dst)
+            print(f"[PREP] GTSRB: test set linked at {test_dst}")
+            break
+    else:
+        print("[PREP] GTSRB: test set not found (final eval will skip classifier)")
 
 
 def main():
