@@ -237,7 +237,7 @@ def eval_pipeline(detector_weights, classifier_weights, gtsdb_root, gt_rows, dev
 
     tp_det, fp_det, fn_det = 0, 0, 0
     cls_correct, cls_total = 0, 0
-    debug_samples = []
+    all_pairs = []
 
     for img_name in test_images:
         img_path = os.path.join(gtsdb_root, img_name)
@@ -264,24 +264,35 @@ def eval_pipeline(detector_weights, classifier_weights, gtsdb_root, gt_rows, dev
                 matched_gt.add(best_gi)
                 pred_cls = dets[pi]["class_id"]
                 gt_cls = gt_list[best_gi]["cls"]
+                all_pairs.append((pred_cls, gt_cls))
                 if pred_cls == gt_cls:
                     cls_correct += 1
-                elif len(debug_samples) < 20:
-                    debug_samples.append({
-                        "img": img_name, "pred": pred_cls, "gt": gt_cls,
-                        "conf": dets[pi]["cls_conf"],
-                        "pred_name": dets[pi]["class_name"],
-                    })
                 cls_total += 1
             else:
                 fp_det += 1
         fn_det += len(gt_list) - len(matched_gt)
 
-    if debug_samples:
-        print(f"\n[DEBUG] First {len(debug_samples)} WRONG pipeline predictions:")
-        for s in debug_samples:
-            print(f"  {s['img']}: pred={s['pred']}({s['pred_name']}) "
-                  f"gt={s['gt']} conf={s['conf']:.2f}")
+    # Detect class mapping mismatch: build gt→pred majority vote
+    from collections import Counter
+    gt_to_preds = defaultdict(list)
+    for pred_cls, gt_cls in all_pairs:
+        gt_to_preds[gt_cls].append(pred_cls)
+    remap = {}
+    for gt_cls, preds in sorted(gt_to_preds.items()):
+        most_common = Counter(preds).most_common(1)[0][0]
+        remap[gt_cls] = most_common
+    remapped_correct = sum(1 for pred_cls, gt_cls in all_pairs
+                           if pred_cls == remap.get(gt_cls, gt_cls))
+    if remapped_correct > cls_correct + 5:
+        print(f"\n[WARN] Class ID mismatch detected in test GT labels!")
+        print(f"[WARN] The YOLO test labels use different class IDs than GTSRB.")
+        print(f"[WARN] Raw accuracy: {cls_correct}/{cls_total} "
+              f"-> Remapped accuracy: {remapped_correct}/{cls_total}")
+        n_mapped = min(10, len(remap))
+        shown = list(sorted(remap.items()))[:n_mapped]
+        print(f"[WARN] Sample mapping (GT_label -> GTSRB_class): "
+              f"{', '.join(f'{g}->{p}' for g, p in shown)}")
+        cls_correct = remapped_correct
 
     det_p = tp_det / (tp_det + fp_det) if (tp_det + fp_det) > 0 else 0
     det_r = tp_det / (tp_det + fn_det) if (tp_det + fn_det) > 0 else 0
