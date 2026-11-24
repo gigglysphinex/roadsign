@@ -55,6 +55,8 @@ def main():
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--no-cache", action="store_true",
+                        help="Disable image pre-loading into RAM")
     args = parser.parse_args()
 
     with open(args.config) as f:
@@ -79,8 +81,9 @@ def main():
     train_tf, val_tf = get_transforms(augment=args.augment)
 
     # Datasets and loaders
-    train_ds = GTSRBDataset(cfg["gtsrb_root"], split["train"], transform=train_tf)
-    val_ds = GTSRBDataset(cfg["gtsrb_root"], split["val"], transform=val_tf)
+    use_cache = not args.no_cache
+    train_ds = GTSRBDataset(cfg["gtsrb_root"], split["train"], transform=train_tf, cache=use_cache)
+    val_ds = GTSRBDataset(cfg["gtsrb_root"], split["val"], transform=val_tf, cache=use_cache)
     train_loader = torch.utils.data.DataLoader(
         train_ds, batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=True
