@@ -86,7 +86,14 @@ def eval_classifier(weights_path, gtsrb_root, device):
             label = int(row.get("ClassId") or row.get("classid") or row.get("ClassID"))
             img_path = os.path.join(test_dir, fname)
             if not os.path.exists(img_path):
-                continue
+                stem = os.path.splitext(fname)[0]
+                for ext in (".png", ".jpg", ".ppm"):
+                    alt = os.path.join(test_dir, stem + ext)
+                    if os.path.exists(alt):
+                        img_path = alt
+                        break
+                else:
+                    continue
 
             img = Image.open(img_path).convert("RGB")
             inp = tf(img).unsqueeze(0).to(device)
