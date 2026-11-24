@@ -237,6 +237,7 @@ def eval_pipeline(detector_weights, classifier_weights, gtsdb_root, gt_rows, dev
 
     tp_det, fp_det, fn_det = 0, 0, 0
     cls_correct, cls_total = 0, 0
+    debug_samples = []
 
     for img_name in test_images:
         img_path = os.path.join(gtsdb_root, img_name)
@@ -261,12 +262,26 @@ def eval_pipeline(detector_weights, classifier_weights, gtsdb_root, gt_rows, dev
             if ious[pi, best_gi] >= 0.5 and best_gi not in matched_gt:
                 tp_det += 1
                 matched_gt.add(best_gi)
-                if dets[pi]["class_id"] == gt_list[best_gi]["cls"]:
+                pred_cls = dets[pi]["class_id"]
+                gt_cls = gt_list[best_gi]["cls"]
+                if pred_cls == gt_cls:
                     cls_correct += 1
+                elif len(debug_samples) < 20:
+                    debug_samples.append({
+                        "img": img_name, "pred": pred_cls, "gt": gt_cls,
+                        "conf": dets[pi]["cls_conf"],
+                        "pred_name": dets[pi]["class_name"],
+                    })
                 cls_total += 1
             else:
                 fp_det += 1
         fn_det += len(gt_list) - len(matched_gt)
+
+    if debug_samples:
+        print(f"\n[DEBUG] First {len(debug_samples)} WRONG pipeline predictions:")
+        for s in debug_samples:
+            print(f"  {s['img']}: pred={s['pred']}({s['pred_name']}) "
+                  f"gt={s['gt']} conf={s['conf']:.2f}")
 
     det_p = tp_det / (tp_det + fp_det) if (tp_det + fp_det) > 0 else 0
     det_r = tp_det / (tp_det + fn_det) if (tp_det + fn_det) > 0 else 0
