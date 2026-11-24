@@ -54,10 +54,8 @@ def main():
 
     if not os.path.exists(data_yaml):
         print(f"[YOLO] Exporting dataset ({variant})...")
-        from roadsign.data import parse_gtsdb_gt, load_split
-        from scripts_helper import run_export
         ret = os.system(
-            f"{sys.executable} scripts/export_yolo.py --config {args.config}"
+            f"{sys.executable} scripts/export_yolo.py --config {args.config} --copy"
         )
         if ret != 0:
             print("ERROR: export_yolo.py failed")
