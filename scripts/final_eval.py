@@ -81,18 +81,39 @@ def eval_classifier(weights_path, gtsrb_root, device):
         sep = ";" if ";" in f.readline() else ","
         f.seek(0)
         reader = csv.DictReader(f, delimiter=sep)
-        for row in reader:
-            fname = row.get("Filename") or row.get("filename")
-            label = int(row.get("ClassId") or row.get("classid") or row.get("ClassID"))
-            img_path = os.path.join(test_dir, fname)
+        rows_list = list(reader)
+        if rows_list:
+            print(f"[DEBUG] CSV columns: {list(rows_list[0].keys())}")
+            print(f"[DEBUG] First row: {dict(rows_list[0])}")
+            print(f"[DEBUG] Total CSV rows: {len(rows_list)}")
+        skipped = 0
+        for row in rows_list:
+            fname = row.get("Filename") or row.get("filename") or row.get("Path")
+            if fname is None:
+                if skipped == 0:
+                    print(f"[DEBUG] No filename column found in row: {dict(row)}")
+                skipped += 1
+                continue
+            label_str = row.get("ClassId") or row.get("classid") or row.get("ClassID") or row.get("Label")
+            if label_str is None:
+                if skipped == 0:
+                    print(f"[DEBUG] No class column found in row: {dict(row)}")
+                skipped += 1
+                continue
+            label = int(label_str)
+            basename = os.path.basename(fname)
+            stem = os.path.splitext(basename)[0]
+            img_path = os.path.join(test_dir, basename)
             if not os.path.exists(img_path):
-                stem = os.path.splitext(fname)[0]
                 for ext in (".png", ".jpg", ".ppm"):
                     alt = os.path.join(test_dir, stem + ext)
                     if os.path.exists(alt):
                         img_path = alt
                         break
                 else:
+                    if skipped < 3:
+                        print(f"[DEBUG] Image not found: {basename} (tried {stem}.png/.jpg/.ppm)")
+                    skipped += 1
                     continue
 
             img = Image.open(img_path).convert("RGB")
