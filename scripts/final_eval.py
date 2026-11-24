@@ -77,15 +77,17 @@ def eval_classifier(weights_path, gtsrb_root, device):
     per_class_correct = defaultdict(int)
     per_class_total = defaultdict(int)
 
-    with open(csv_path, newline="") as f:
-        sep = ";" if ";" in f.readline() else ","
+    with open(csv_path, newline="", encoding="utf-8-sig") as f:
+        first_line = f.readline()
+        print(f"[DEBUG] CSV header: {repr(first_line[:200])}")
+        sep = ";" if ";" in first_line else ","
         f.seek(0)
         reader = csv.DictReader(f, delimiter=sep)
         rows_list = list(reader)
+        print(f"[DEBUG] CSV rows: {len(rows_list)}")
         if rows_list:
-            print(f"[DEBUG] CSV columns: {list(rows_list[0].keys())}")
-            print(f"[DEBUG] First row: {dict(rows_list[0])}")
-            print(f"[DEBUG] Total CSV rows: {len(rows_list)}")
+            print(f"[DEBUG] Columns: {list(rows_list[0].keys())}")
+            print(f"[DEBUG] Row 0: {dict(rows_list[0])}")
         skipped = 0
         for row in rows_list:
             fname = row.get("Filename") or row.get("filename") or row.get("Path")
