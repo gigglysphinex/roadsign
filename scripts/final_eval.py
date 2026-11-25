@@ -133,7 +133,8 @@ def eval_classifier(weights_path, gtsrb_root, device):
     return {"accuracy": round(acc, 4), "correct": correct, "total": total}
 
 
-def eval_detector(weights_path, gtsdb_root, gt_rows, num_classes, device):
+def eval_detector(weights_path, gtsdb_root, gt_rows, num_classes, device,
+                  det_conf=0.25, tta=False):
     """Evaluate YOLOv8 detector on GTSDB test images."""
     from ultralytics import YOLO
 
@@ -159,7 +160,8 @@ def eval_detector(weights_path, gtsdb_root, gt_rows, num_classes, device):
 
     for img_name in test_images:
         img_path = os.path.join(gtsdb_root, img_name)
-        results = model(img_path, conf=0.25, iou=0.45, verbose=False)
+        results = model(img_path, conf=det_conf, iou=0.45, verbose=False,
+                        augment=tta)
 
         pred_boxes = []
         for r in results:
@@ -212,7 +214,8 @@ def eval_detector(weights_path, gtsdb_root, gt_rows, num_classes, device):
     }
 
 
-def eval_pipeline(detector_weights, classifier_weights, gtsdb_root, gt_rows, device):
+def eval_pipeline(detector_weights, classifier_weights, gtsdb_root, gt_rows, device,
+                  det_conf=0.25, tta=False):
     """Evaluate the A1 detect-then-classify pipeline on GTSDB test images."""
     from roadsign.pipeline import DetectThenClassify
 
@@ -232,7 +235,7 @@ def eval_pipeline(detector_weights, classifier_weights, gtsdb_root, gt_rows, dev
 
     pipe = DetectThenClassify(
         detector_weights, classifier_weights,
-        device=str(device), det_conf=0.25, nms_iou=0.45
+        device=str(device), det_conf=det_conf, nms_iou=0.45, tta=tta
     )
 
     tp_det, fp_det, fn_det = 0, 0, 0
@@ -316,6 +319,10 @@ def main():
     parser.add_argument("--classifier-weights", required=True)
     parser.add_argument("--detector-1cls", required=True)
     parser.add_argument("--detector-43cls", default=None)
+    parser.add_argument("--det-conf", type=float, default=0.25,
+                        help="Detection confidence threshold")
+    parser.add_argument("--tta", action="store_true",
+                        help="Enable YOLO test-time augmentation")
     args = parser.parse_args()
 
     with open(args.config) as f:
@@ -336,24 +343,29 @@ def main():
         args.classifier_weights, cfg["gtsrb_root"], device
     )
 
+    print(f"[EVAL] det_conf={args.det_conf}, TTA={args.tta}")
+
     # 2. Detection 1-class
     print("\n--- Detection 1-class (GTSDB test 600-899) ---")
     report["detection_1cls"] = eval_detector(
-        args.detector_1cls, cfg["gtsdb_root"], gt_rows, 1, device
+        args.detector_1cls, cfg["gtsdb_root"], gt_rows, 1, device,
+        det_conf=args.det_conf, tta=args.tta
     )
 
     # 3. Detection 43-class
     if args.detector_43cls:
         print("\n--- Detection 43-class (GTSDB test 600-899) ---")
         report["detection_43cls"] = eval_detector(
-            args.detector_43cls, cfg["gtsdb_root"], gt_rows, 43, device
+            args.detector_43cls, cfg["gtsdb_root"], gt_rows, 43, device,
+            det_conf=args.det_conf, tta=args.tta
         )
 
     # 4. A1 Pipeline
     print("\n--- A1 Pipeline: detect-then-classify (GTSDB test 600-899) ---")
     report["pipeline_a1"] = eval_pipeline(
         args.detector_1cls, args.classifier_weights,
-        cfg["gtsdb_root"], gt_rows, device
+        cfg["gtsdb_root"], gt_rows, device,
+        det_conf=args.det_conf, tta=args.tta
     )
 
     # Save report

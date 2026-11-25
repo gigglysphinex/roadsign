@@ -37,10 +37,11 @@ CLASSIFY_TF = transforms.Compose([
 
 class DetectThenClassify:
     def __init__(self, detector_weights, classifier_weights,
-                 device="cpu", det_conf=0.25, nms_iou=0.45):
+                 device="cpu", det_conf=0.25, nms_iou=0.45, tta=False):
         self.device = torch.device(device)
         self.det_conf = det_conf
         self.nms_iou = nms_iou
+        self.tta = tta
 
         from ultralytics import YOLO
         self.detector = YOLO(detector_weights)
@@ -61,7 +62,7 @@ class DetectThenClassify:
             img = Image.open(img).convert("RGB")
 
         det_results = self.detector(img, conf=self.det_conf, iou=self.nms_iou,
-                                     verbose=False)
+                                     verbose=False, augment=self.tta)
         detections = []
         for r in det_results:
             boxes = r.boxes
